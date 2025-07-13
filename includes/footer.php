@@ -7,7 +7,18 @@
 
       <!-- Company Info -->
       <div class="lg:col-span-2">
-        <h3 class="text-2xl font-bold mb-4">TGS - Tirth Global Solutions</h3>
+            <a href="index.php" class="flex items-center text-2xl font-bold text-white dark:text-white">
+    <img 
+      width="80" 
+      height="50" 
+      src="assets/images/tgs_logo.png" 
+      alt="Tirth Global Solutions Logo"
+      class="w-100 h-12 mr-2"
+    >
+    <h3 class="text-2xl font-bold mb-4">Tirth Global Solutions</h3>
+  </a>
+
+        <!-- <h3 class="text-2xl font-bold mb-4">TGS - Tirth Global Solutions</h3> -->
         <p class="text-blue-100 leading-relaxed mb-6 max-w-md">
           292, Affinwala Building, 2nd Floor, Room No. 6, SBS Road Opp. EMCA House.
         </p>

@@ -10,7 +10,7 @@
     With over 25,000 assessments and global clientele, we help organizations grow faster.
   </p> -->
 
-  <section id="about" class="py-20 bg-gradient-to-b from-blue-100 to-blue-50">
+  <section id="about" class="py-20 bg-gradient-to-b from-white to-blue-50">
   <div class="container mx-auto px-4">
     <!-- Section Heading -->
     <div class="text-center mb-16">

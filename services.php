@@ -57,7 +57,7 @@ $services = [
   </div>
 </section> -->
 <div data-aos="fade-up" class="text-center pt-0">
-<section id="services" class="py-20 bg-gradient-to-b from-blue-100 to-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+<section id="services" class="py-20 bg-gradient-to-b from-white to-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white">
   <div class="container mx-auto px-4">
 
     <!-- Section Header -->

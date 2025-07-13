@@ -101,6 +101,10 @@ $services = [
             Global Talent,
             <span class="text-blue-300"> Local Expertise</span>
           </h1>
+       <!--    <h1 class="text-5xl lg:text-6xl font-bold leading-tight">
+            #1 in Skill Assessments,
+            <span class="text-blue-300">PAN India</span>
+          </h1> -->
           <p class="text-xl text-white/90 leading-relaxed max-w-2xl">
             Since 2015, Tirth Global Solutions has been connecting exceptional talent 
             with leading organizations across industries and geographies. Your trusted 
@@ -256,6 +260,24 @@ $services = [
 </div>
 
 </section>
+
+<section id="client-logos" class="px-4 py-12 bg-background">
+  <div class="text-center pt-0">
+    <h2 class="text-4xl font-bold text-foreground mb-4">Trusted By Industry Leaders</h2>
+    <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-4">
+      We've proudly partnered with government bodies, corporate leaders, and global enterprises across multiple sectors.
+    </p>
+
+    <!-- Logo Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-6 items-center justify-center max-w-6xl mx-auto pt-6">
+      <!-- Example Client Logos (replace src with your logos) -->
+      <img src="assets/images/client_1.png" alt="Client 1" class="h-14 mx-auto grayscale hover:grayscale-0 transition duration-300" />
+      <img src="assets/images/client_2.png" alt="Client 1" class="h-14 mx-auto grayscale hover:grayscale-0 transition duration-300" />
+    </div>
+  </div>
+</section>
+  <!-- <hr> -->
+
 
 <section id="leadership" class="py-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
   <div class="container mx-auto px-4">

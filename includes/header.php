@@ -44,7 +44,7 @@
       alt="Tirth Global Solutions Logo"
       class="w-100 h-12"
     >
-    <!-- <span class="text-gray-500 text-base ml-2">Tirth Global Solutions</span> -->
+    <h3 class="text-gray-500 text-2xl ml-2">Tirth Global Solutions</h3>
   </a>
     <!-- <a href="index.php" class="text-2xl font-bold text-blue-700 dark:text-white"><img width="50" height="50" src="assets/images/tgs_logo.png"><span class="text-gray-500 text-base ml-2">Tirth Global Solutions</span></a> -->
     <nav class="space-x-4">
