@@ -229,7 +229,8 @@ $services = [
     </div>
   </div>
 
-  <div class="bg-blue-100 rounded-2xl p-16 mt-6">
+<div class="px-4">
+  <div class="bg-blue-100 rounded-2xl p-8 mt-6">
     <h3 class="text-2xl font-semibold text-center text-gray-900 mb-8">
       Our Track Record
     </h3>
@@ -252,6 +253,7 @@ $services = [
       </div>
     </div>
   </div>
+</div>
 
 </section>
 
@@ -400,7 +402,7 @@ $services = [
 
 
 <!-- CTA Banner -->
-<section class="bg-blue-900 text-white py-12 text-center">
+<section class="bg-blue-900 text-white px-4 py-12 text-center">
   <h2 class="text-2xl font-semibold">Looking to hire or get hired?</h2>
   <p class="mt-2">Let TGS help you transform your dreams into reality.</p>
   <a href="contact.php" class="mt-4 inline-block bg-white text-blue-800 px-6 py-2 rounded-full font-semibold hover:bg-gray-200">Get Started</a>

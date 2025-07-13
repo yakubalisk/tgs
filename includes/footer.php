@@ -9,18 +9,16 @@
       <div class="lg:col-span-2">
         <h3 class="text-2xl font-bold mb-4">TGS - Tirth Global Solutions</h3>
         <p class="text-blue-100 leading-relaxed mb-6 max-w-md">
-          Since 2015, we've been connecting exceptional talent with leading organizations 
-          across industries and geographies. Your trusted partner for comprehensive HR 
-          solutions and recruitment excellence.
+          292, Affinwala Building, 2nd Floor, Room No. 6, SBS Road Opp. EMCA House.
         </p>
         <div class="space-y-3">
           <div class="flex items-center gap-3">
             <i class="fas fa-phone text-blue-300"></i>
-            <span class="text-sm">+91-XXX-XXX-XXXX</span>
+            <span class="text-sm">+91-865-507-5656 / +91-865-517-5656</span>
           </div>
           <div class="flex items-center gap-3">
             <i class="fas fa-envelope text-blue-300"></i>
-            <span class="text-sm">info@tgsindia.com</span>
+            <span class="text-sm">hr.tirthglobal@gmail.com / hr@tirthglobal.com</span>
           </div>
           <div class="flex items-center gap-3">
             <i class="fas fa-map-marker-alt text-blue-300"></i>
@@ -81,7 +79,7 @@
     <div class="py-6 border-t border-blue-700">
       <div class="flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="text-sm text-blue-100">
-          © 2024 Tirth Global Solutions LLP. All rights reserved.
+          © 2025 Tirth Global Solutions LLP. All rights reserved.
         </div>
 
         <!-- Social Icons -->

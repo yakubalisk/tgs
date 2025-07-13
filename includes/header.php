@@ -36,7 +36,17 @@
 </div>
 
   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-    <a href="index.php" class="text-2xl font-bold text-blue-700 dark:text-white">TGS<span class="text-gray-500 text-base ml-2">Tirth Global Solutions</span></a>
+    <a href="index.php" class="flex items-center text-2xl font-bold text-blue-700 dark:text-white">
+    <img 
+      width="80" 
+      height="50" 
+      src="assets/images/tgs_logo.png" 
+      alt="Tirth Global Solutions Logo"
+      class="w-100 h-12"
+    >
+    <!-- <span class="text-gray-500 text-base ml-2">Tirth Global Solutions</span> -->
+  </a>
+    <!-- <a href="index.php" class="text-2xl font-bold text-blue-700 dark:text-white"><img width="50" height="50" src="assets/images/tgs_logo.png"><span class="text-gray-500 text-base ml-2">Tirth Global Solutions</span></a> -->
     <nav class="space-x-4">
   <a href="index.php" class="<?= $currentPage == 'index.php' ? 'text-blue-600 font-semibold underline' : 'hover:underline' ?>">Home</a>
   <a href="about.php" class="<?= $currentPage == 'about.php' ? 'text-blue-600 font-semibold underline' : 'hover:underline' ?>">About</a>
