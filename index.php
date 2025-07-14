@@ -43,7 +43,7 @@ $services = [
   ],  
   [
     'icon' => 'fa-graduation-cap',
-    'title' => 'Global Coverage',
+    'title' => 'Training & Development',
     'description' => 'Corporate etiquette training and cross-cultural preparation for seamless international integration.',
     'features' => ['Corporate Etiquette', 'Cross-Cultural Training', 'Onboarding Support', 'Soft Skills Development']
   ],  
@@ -88,6 +88,7 @@ $services = [
   </div>
 </section>
 -->
+<div data-aos="fade-up">
 <section id="home" class="relative min-h-screen flex items-center bg-gradient-to-br from-blue-900 to-blue-600 text-white overflow-hidden">
   <!-- Background pattern -->
   <div class="absolute inset-0 bg-[url('/path-to-your-grid-pattern.svg')] bg-repeat opacity-10"></div>
@@ -213,7 +214,7 @@ $services = [
         <div class="bg-blue-100 p-3 rounded-full mb-4">
           <i class="fas fa-clipboard-check text-blue-600 text-xl"></i>
         </div>
-        <h4 class="text-lg font-semibold">25,000+ Assessments</h4>
+        <h4 class="text-lg font-semibold">30,000+ Assessments</h4>
         <p class="text-gray-600 text-sm">Across India under various State & Central Schemes</p>
       </div>
       <div class="bg-white shadow p-6 rounded-xl">
@@ -474,6 +475,7 @@ $services = [
 
   </div>
 </section>
+</div>
 
 
 

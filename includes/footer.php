@@ -15,7 +15,7 @@
       alt="Tirth Global Solutions Logo"
       class="w-100 h-12 mr-2"
     >
-    <h3 class="text-2xl font-bold mb-4">Tirth Global Solutions</h3>
+    <h3 class="text-2xl font-bold mb-4">Tirth Global Solutions LLP</h3>
   </a>
 
         <!-- <h3 class="text-2xl font-bold mb-4">TGS - Tirth Global Solutions</h3> -->
@@ -29,7 +29,7 @@
           </div>
           <div class="flex items-center gap-3">
             <i class="fas fa-envelope text-blue-300"></i>
-            <span class="text-sm">hr.tirthglobal@gmail.com / hr@tirthglobal.com</span>
+            <span class="text-sm">info.tirthglobal@gmail.com / info@tirthglobal.com</span>
           </div>
           <div class="flex items-center gap-3">
             <i class="fas fa-map-marker-alt text-blue-300"></i>
