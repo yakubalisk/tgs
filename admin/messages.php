@@ -1,40 +1,40 @@
 <?php
-include '../function.php';
+require_once '../middleware.php';
+require_once '../function.php';
 $db = new Database();
-
 $contacts = $db->getAssoc("SELECT * FROM contact ORDER BY created_at DESC");
-// print_r($contacts);die();
+include 'includes/header.php';
 ?>
 
-<?php include 'includes/header.php'; ?>
+<h1 style="font-size:1.4rem;font-weight:700;margin-bottom:24px;">All Contact Messages</h1>
 
-<div class="max-w-7xl mx-auto px-4 py-12">
-  <h1 class="text-2xl font-bold mb-6">All Contact Messages</h1>
-
-  <div class="overflow-x-auto bg-white shadow rounded-lg">
-    <table class="min-w-full table-auto">
-      <thead class="bg-gray-100">
-        <tr>
-          <th class="px-4 py-2 text-left">Name</th>
-          <th class="px-4 py-2 text-left">Email</th>
-          <th class="px-4 py-2 text-left">Phone</th>
-          <th class="px-4 py-2 text-left">Message</th>
-          <th class="px-4 py-2 text-left">Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach ($contacts as $row): ?>
-        <tr class="border-t">
-          <td class="px-4 py-2"><?= htmlspecialchars($row['first_name'].' '.$row['last_name']) ?></td>
-          <td class="px-4 py-2"><?= htmlspecialchars($row['email']) ?></td>
-          <td class="px-4 py-2"><?= htmlspecialchars($row['phone_no']) ?></td>
-          <td class="px-4 py-2"><?= htmlspecialchars($row['message']) ?></td>
-          <td class="px-4 py-2 text-sm text-gray-500"><?= date('d M Y', strtotime($row['created_at'])) ?></td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
+<div class="admin-card">
+  <div class="admin-card-header"><h2>Messages (<?= count($contacts) ?>)</h2></div>
+  <div class="admin-card-body" style="padding:0;">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th><th>Email</th><th>Phone</th><th>Message</th><th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($contacts as $row): ?>
+          <tr>
+            <td><strong><?= htmlspecialchars($row['first_name'].' '.$row['last_name']) ?></strong></td>
+            <td><?= htmlspecialchars($row['email']) ?></td>
+            <td><?= htmlspecialchars($row['phone_no']) ?></td>
+            <td style="max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($row['message']) ?></td>
+            <td style="white-space:nowrap;color:#64748b;"><?= date('d M Y', strtotime($row['created_at'])) ?></td>
+          </tr>
+          <?php endforeach; ?>
+          <?php if (empty($contacts)): ?>
+            <tr><td colspan="5" style="text-align:center;padding:32px;color:#64748b;">No messages yet.</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<?php include '../includes/footer.php'; ?>
+<?php include 'includes/footer.php'; ?>

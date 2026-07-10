@@ -10,15 +10,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $password = $_POST['password'];
 
   if ($username && $password) {
-    $user = $db->getAssoc("SELECT * FROM admin_users WHERE username = :username", ['username' => $username]);
-
-    if ($user && password_verify($password, $user['password'])) {
-      $_SESSION['admin_logged_in'] = true;
-      $_SESSION['admin_user'] = $user['username'];
-      header("Location: index.php");
-      exit;
-    } else {
-      $error = "Invalid username or password";
+    $user = $db->getAssoc1("SELECT * FROM admin_users WHERE username = :username", [':username' => $username]);
+    if (!empty($user)) {
+      if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['admin_logged_in'] = true;
+        $_SESSION['admin_user'] = $user['username'];
+        header("Location: index.php");
+        exit;
+      } else {
+        $error = "Invalid username or password";
+      }
+    }else{
+        $error = "No User Found";
     }
   } else {
     $error = "Please fill in both fields";
