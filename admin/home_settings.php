@@ -45,6 +45,51 @@ $expertiseText = implode("\n", $expertiseArr);
 <form method="POST">
   <input type="hidden" name="action" value="save">
 
+  <!-- HEADER & TOP BAR SETTINGS -->
+  <div class="admin-card" style="margin-bottom:24px;">
+    <div class="admin-card-header"><h2>Header & Top Bar Settings</h2></div>
+    <div class="admin-card-body">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" name="topbar_phone" class="form-control" value="<?= s('topbar_phone',$rows,'+91-865-507-5656') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" name="topbar_email" class="form-control" value="<?= s('topbar_email',$rows,'info.tirthglobal@gmail.com') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tagline (Since...)</label>
+          <input type="text" name="topbar_tagline" class="form-control" value="<?= s('topbar_tagline',$rows,'Since 2015 | Global Recruitment Excellence') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Site Name</label>
+          <input type="text" name="site_name" class="form-control" value="<?= s('site_name',$rows,'Tirth Global Solutions') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Site Name Suffix</label>
+          <input type="text" name="site_suffix" class="form-control" value="<?= s('site_suffix',$rows,'LLP') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Logo Path / URL</label>
+          <input type="text" name="site_logo" class="form-control" value="<?= s('site_logo',$rows,'assets/images/tgs_logo.png') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">LinkedIn URL</label>
+          <input type="text" name="topbar_linkedin" class="form-control" value="<?= s('topbar_linkedin',$rows,'#') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Facebook URL</label>
+          <input type="text" name="topbar_facebook" class="form-control" value="<?= s('topbar_facebook',$rows,'#') ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Twitter URL</label>
+          <input type="text" name="topbar_twitter" class="form-control" value="<?= s('topbar_twitter',$rows,'#') ?>">
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- HERO MINI STATS -->
   <div class="admin-card" style="margin-bottom:24px;">
     <div class="admin-card-header"><h2>Hero Section — Stats Bar</h2></div>

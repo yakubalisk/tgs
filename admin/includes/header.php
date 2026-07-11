@@ -102,6 +102,8 @@ function navLink($href, $icon, $label, $current) {
     <?php navLink('client_logos.php',    'building',     'Client Logos',  $currentPage); ?>
     <?php navLink('gallery_manage.php',  'images',       'Gallery',       $currentPage); ?>
     <?php navLink('samarth_manage.php',  'certificate',  'Samarth',       $currentPage); ?>
+    <?php navLink('menu_manage.php',     'bars',         'Header Menu',   $currentPage); ?>
+    <?php navLink('pages_manage.php',    'file-lines',   'Custom Pages',  $currentPage); ?>
 
     <div class="sidebar-label">Inbox</div>
     <?php navLink('messages.php',  'envelope',  'Messages',  $currentPage); ?>
@@ -127,6 +129,8 @@ function navLink($href, $icon, $label, $current) {
         'client_logos.php'       => 'Client Logos',
         'gallery_manage.php'     => 'Gallery',
         'samarth_manage.php'     => 'Assessment Samarth',
+        'menu_manage.php'        => 'Header Menu Links',
+        'pages_manage.php'       => 'Custom Pages Builder',
         'messages.php'           => 'Messages',
       ];
       echo $titles[$currentPage] ?? 'Admin Panel';

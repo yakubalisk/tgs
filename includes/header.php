@@ -1,11 +1,37 @@
 <?php // includes/header.php ?>
-<?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
+<?php 
+$currentPage = basename($_SERVER['PHP_SELF']); 
+require_once __DIR__ . '/../function.php';
+$db = new Database();
+$pdo = $db->con;
+
+// Fetch settings
+$headerSettings = $pdo->query("SELECT skey, sval FROM home_settings")->fetchAll(PDO::FETCH_KEY_PAIR);
+function hs($k, $settings, $fallback = '') {
+    return htmlspecialchars($settings[$k] ?? $fallback);
+}
+
+// Fetch menu items
+$menuRows = $pdo->query("SELECT * FROM menu_items WHERE is_active=1 ORDER BY sort_order, id")->fetchAll(PDO::FETCH_ASSOC);
+$menuItems = [];
+foreach ($menuRows as $row) {
+    if ($row['parent_id'] === null) {
+        $menuItems[$row['id']] = $row;
+        $menuItems[$row['id']]['children'] = [];
+    }
+}
+foreach ($menuRows as $row) {
+    if ($row['parent_id'] !== null && isset($menuItems[$row['parent_id']])) {
+        $menuItems[$row['parent_id']]['children'][] = $row;
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tirth Global Solutions LLP</title>
+  <title><?= hs('site_name', $headerSettings, 'Tirth Global Solutions') ?> <?= hs('site_suffix', $headerSettings, 'LLP') ?></title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
@@ -161,24 +187,30 @@
 <div class="bg-gradient-to-r from-blue-900 to-blue-700 text-white text-xs py-2 px-4 hidden sm:block">
   <div class="max-w-7xl mx-auto flex items-center justify-between">
     <div class="flex items-center gap-6">
-      <a href="tel:+918655075656" class="flex items-center gap-2 text-blue-200 hover:text-white transition">
+      <a href="tel:<?= preg_replace('/[^0-9+]/', '', hs('topbar_phone', $headerSettings, '+91-865-507-5656')) ?>" class="flex items-center gap-2 text-blue-200 hover:text-white transition">
         <i class="fas fa-phone-alt text-blue-300 text-[10px]"></i>
-        +91-865-507-5656
+        <?= hs('topbar_phone', $headerSettings, '+91-865-507-5656') ?>
       </a>
-      <a href="mailto:info.tirthglobal@gmail.com" class="flex items-center gap-2 text-blue-200 hover:text-white transition">
+      <a href="mailto:<?= hs('topbar_email', $headerSettings, 'info.tirthglobal@gmail.com') ?>" class="flex items-center gap-2 text-blue-200 hover:text-white transition">
         <i class="fas fa-envelope text-blue-300 text-[10px]"></i>
-        info.tirthglobal@gmail.com
+        <?= hs('topbar_email', $headerSettings, 'info.tirthglobal@gmail.com') ?>
       </a>
     </div>
     <div class="flex items-center gap-4 text-blue-200">
       <span class="flex items-center gap-1">
         <i class="fas fa-circle text-green-400" style="font-size:6px;"></i>
-        Since 2015 | Global Recruitment Excellence
+        <?= hs('topbar_tagline', $headerSettings, 'Since 2015 | Global Recruitment Excellence') ?>
       </span>
       <div class="flex items-center gap-3 ml-4">
-        <a href="#" class="hover:text-white transition"><i class="fab fa-linkedin-in"></i></a>
-        <a href="#" class="hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
-        <a href="#" class="hover:text-white transition"><i class="fab fa-twitter"></i></a>
+        <?php if (hs('topbar_linkedin', $headerSettings, '#') !== ''): ?>
+          <a href="<?= hs('topbar_linkedin', $headerSettings, '#') ?>" class="hover:text-white transition" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        <?php endif; ?>
+        <?php if (hs('topbar_facebook', $headerSettings, '#') !== ''): ?>
+          <a href="<?= hs('topbar_facebook', $headerSettings, '#') ?>" class="hover:text-white transition" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <?php endif; ?>
+        <?php if (hs('topbar_twitter', $headerSettings, '#') !== ''): ?>
+          <a href="<?= hs('topbar_twitter', $headerSettings, '#') ?>" class="hover:text-white transition" target="_blank"><i class="fab fa-twitter"></i></a>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -193,66 +225,42 @@
 
       <!-- Logo -->
       <a href="index.php" class="flex items-center gap-3 flex-shrink-0">
-        <img src="assets/images/tgs_logo.png" alt="TGS Logo" class="h-10 w-auto object-contain">
+        <img src="<?= hs('site_logo', $headerSettings, 'assets/images/tgs_logo.png') ?>" alt="TGS Logo" class="h-10 w-auto object-contain">
         <div class="hidden sm:block">
-          <span class="text-blue-900 font-bold text-base leading-tight block">Tirth Global Solutions</span>
-          <span class="text-blue-500 font-medium text-xs tracking-wide">LLP</span>
+          <span class="text-blue-900 font-bold text-base leading-tight block"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions') ?></span>
+          <span class="text-blue-500 font-medium text-xs tracking-wide"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span>
         </div>
       </a>
 
       <!-- Desktop Nav -->
       <nav class="hidden lg:flex items-center gap-1 xl:gap-2" id="desktopMenu">
-
-        <?php
-        $links = [
-          ['href' => 'index.php',              'label' => 'Home'],
-          ['href' => 'about.php',              'label' => 'About'],
-        ];
-        foreach ($links as $l):
-          $active = ($currentPage === $l['href']) ? 'active' : '';
-        ?>
-          <a href="<?= $l['href'] ?>" class="nav-link <?= $active ?>"><?= $l['label'] ?></a>
+        <?php foreach ($menuItems as $m): ?>
+          <?php if (empty($m['children'])): ?>
+            <?php 
+              $active = ($currentPage === $m['url']) ? 'active' : '';
+            ?>
+            <a href="<?= htmlspecialchars($m['url']) ?>" class="nav-link <?= $active ?>"><?= htmlspecialchars($m['title']) ?></a>
+          <?php else: ?>
+            <div class="dropdown-wrap relative">
+              <button class="dropdown-trigger">
+                <?= htmlspecialchars($m['title']) ?>
+                <i class="fas fa-chevron-down chevron"></i>
+              </button>
+              <div class="dropdown-menu">
+                <?php foreach ($m['children'] as $child): ?>
+                  <a href="<?= htmlspecialchars($child['url']) ?>" class="dropdown-item">
+                    <?php if ($child['icon']): ?>
+                      <i class="fas <?= htmlspecialchars($child['icon']) ?>"></i>
+                    <?php endif; ?>
+                    <?= htmlspecialchars($child['title']) ?>
+                  </a>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          <?php endif; ?>
         <?php endforeach; ?>
 
-        <!-- Services dropdown -->
-        <div class="dropdown-wrap relative">
-          <button class="dropdown-trigger">
-            Services
-            <i class="fas fa-chevron-down chevron"></i>
-          </button>
-          <div class="dropdown-menu">
-            <a href="services.php#manpower" class="dropdown-item"><i class="fas fa-users"></i>Manpower Recruitment</a>
-            <a href="services.php#skill"    class="dropdown-item"><i class="fas fa-clipboard-check"></i>Skill Assessment</a>
-            <a href="services.php#hr"       class="dropdown-item"><i class="fas fa-briefcase"></i>HR Management</a>
-            <a href="services.php#training" class="dropdown-item"><i class="fas fa-graduation-cap"></i>Training & Development</a>
-          </div>
-        </div>
-
-        <!-- Assessment dropdown -->
-        <div class="dropdown-wrap relative">
-          <button class="dropdown-trigger">
-            Assessment
-            <i class="fas fa-chevron-down chevron"></i>
-          </button>
-          <div class="dropdown-menu">
-            <a href="samarth.php"   class="dropdown-item"><i class="fas fa-certificate"></i>Assessment Samarth</a>
-            <a href="careers.php#assessors" class="dropdown-item"><i class="fas fa-running"></i>Sports Assessor</a>
-          </div>
-        </div>
-
-        <?php
-        $moreLinks = [
-          ['href' => 'recruitment-process.php', 'label' => 'Recruitment Process'],
-          ['href' => 'why-us.php',              'label' => 'Why Us'],
-          ['href' => 'careers.php',             'label' => 'Careers'],
-        ];
-        foreach ($moreLinks as $l):
-          $active = ($currentPage === $l['href']) ? 'active' : '';
-        ?>
-          <a href="<?= $l['href'] ?>" class="nav-link <?= $active ?>"><?= $l['label'] ?></a>
-        <?php endforeach; ?>
-
-        <!-- CTA button -->
+        <!-- Contact Us CTA button (rendered by default at the end) -->
         <a href="contact.php"
            class="ml-3 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg
                   hover:bg-blue-700 active:bg-blue-800 shadow-sm hover:shadow-md transition-all duration-200">
@@ -283,10 +291,10 @@
   <!-- Drawer header -->
   <div class="flex items-center justify-between px-6 py-5 border-b border-blue-700 flex-shrink-0">
     <div class="flex items-center gap-3">
-      <img src="assets/images/tgs_logo.png" alt="TGS" class="h-8 w-auto brightness-0 invert">
+      <img src="<?= hs('site_logo', $headerSettings, 'assets/images/tgs_logo.png') ?>" alt="TGS" class="h-8 w-auto brightness-0 invert">
       <div>
-        <span class="text-white font-bold text-sm block leading-tight">Tirth Global Solutions</span>
-        <span class="text-blue-300 text-xs">LLP</span>
+        <span class="text-white font-bold text-sm block leading-tight"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions') ?></span>
+        <span class="text-blue-300 text-xs"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span>
       </div>
     </div>
     <button id="closeMobileMenu" class="w-8 h-8 rounded-full bg-blue-800 text-white flex items-center justify-center hover:bg-blue-700 transition">
@@ -296,23 +304,18 @@
 
   <!-- Drawer links -->
   <nav class="flex-1 py-4">
-    <a href="index.php"  class="mob-link">Home</a>
-    <a href="about.php"  class="mob-link">About Us</a>
-
-    <div class="mob-section-title">Services</div>
-    <a href="services.php#manpower" class="mob-link pl-8">Manpower Recruitment</a>
-    <a href="services.php#skill"    class="mob-link pl-8">Skill Assessment</a>
-    <a href="services.php#hr"       class="mob-link pl-8">HR Management</a>
-    <a href="services.php#training" class="mob-link pl-8">Training & Development</a>
-
-    <div class="mob-section-title">Assessment</div>
-    <a href="samarth.php"             class="mob-link pl-8">Assessment Samarth</a>
-    <a href="careers.php#assessors" class="mob-link pl-8">Sports Assessor</a>
-
-    <div class="mob-section-title">More</div>
-    <a href="recruitment-process.php" class="mob-link">Recruitment Process</a>
-    <a href="why-us.php"              class="mob-link">Why Us</a>
-    <a href="careers.php"             class="mob-link">Careers</a>
+    <?php foreach ($menuItems as $m): ?>
+      <?php if (empty($m['children'])): ?>
+        <a href="<?= htmlspecialchars($m['url']) ?>" class="mob-link"><?= htmlspecialchars($m['title']) ?></a>
+      <?php else: ?>
+        <div class="mob-section-title"><?= htmlspecialchars($m['title']) ?></div>
+        <?php foreach ($m['children'] as $child): ?>
+          <a href="<?= htmlspecialchars($child['url']) ?>" class="mob-link pl-8">
+            <?= htmlspecialchars($child['title']) ?>
+          </a>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    <?php endforeach; ?>
   </nav>
 
   <!-- Drawer CTA -->
@@ -323,9 +326,9 @@
       Contact Us
     </a>
     <div class="mt-4 flex items-center gap-4 justify-center">
-      <a href="tel:+918655075656" class="text-blue-300 hover:text-white transition text-sm"><i class="fas fa-phone-alt mr-1"></i>Call Us</a>
+      <a href="tel:<?= preg_replace('/[^0-9+]/', '', hs('topbar_phone', $headerSettings, '+91-865-507-5656')) ?>" class="text-blue-300 hover:text-white transition text-sm"><i class="fas fa-phone-alt mr-1"></i>Call Us</a>
       <span class="text-blue-700">|</span>
-      <a href="mailto:info.tirthglobal@gmail.com" class="text-blue-300 hover:text-white transition text-sm"><i class="fas fa-envelope mr-1"></i>Email</a>
+      <a href="mailto:<?= hs('topbar_email', $headerSettings, 'info.tirthglobal@gmail.com') ?>" class="text-blue-300 hover:text-white transition text-sm"><i class="fas fa-envelope mr-1"></i>Email</a>
     </div>
   </div>
 </div>
@@ -363,4 +366,3 @@
   });
 })();
 </script>
-
