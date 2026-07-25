@@ -227,8 +227,8 @@ foreach ($menuRows as $row) {
       <a href="index.php" class="flex items-center gap-3 flex-shrink-0">
         <img src="<?= hs('site_logo', $headerSettings, 'assets/images/tgs_logo.png') ?>" alt="TGS Logo" class="h-10 w-auto object-contain">
         <div class="hidden sm:block">
-          <span class="text-blue-900 font-bold text-base leading-tight block"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions') ?></span>
-          <span class="text-blue-500 font-medium text-xs tracking-wide"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span>
+          <span class="text-blue-900 font-bold text-base leading-tight block"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions LLP.') ?></span>
+          <!-- <span class="text-blue-500 font-medium text-xs tracking-wide"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span> -->
         </div>
       </a>
 
@@ -293,8 +293,8 @@ foreach ($menuRows as $row) {
     <div class="flex items-center gap-3">
       <img src="<?= hs('site_logo', $headerSettings, 'assets/images/tgs_logo.png') ?>" alt="TGS" class="h-8 w-auto brightness-0 invert">
       <div>
-        <span class="text-white font-bold text-sm block leading-tight"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions') ?></span>
-        <span class="text-blue-300 text-xs"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span>
+        <span class="text-white font-bold text-md block leading-tight"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions LLP.') ?></span>
+        <!-- <span class="text-blue-300 text-xs"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span> -->
       </div>
     </div>
     <button id="closeMobileMenu" class="w-8 h-8 rounded-full bg-blue-800 text-white flex items-center justify-center hover:bg-blue-700 transition">

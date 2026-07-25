@@ -17,6 +17,32 @@ function cfg($key, $settings, $fallback = '') { return $settings[$key] ?? $fallb
 
 $expertiseItems = json_decode(cfg('expertise_items', $settingsRaw, '[]'), true) ?: [];
 
+// ── Fetch assessor list counts for India Map ──────────────────
+$listBlocks = $pdo->query("SELECT content FROM page_blocks WHERE block_type = 'list'")->fetchAll(PDO::FETCH_COLUMN);
+$stateCounts = [];
+$totalAssessors = 0;
+foreach ($listBlocks as $content) {
+    $rows = json_decode($content, true);
+    if (is_array($rows)) {
+        foreach ($rows as $row) {
+            $stateName = '';
+            foreach ($row as $k => $v) {
+                if (strtolower(trim($k)) === 'state') {
+                    $stateName = strtoupper(trim($v));
+                    break;
+                }
+            }
+            if (!empty($stateName)) {
+                $stateCounts[$stateName] = ($stateCounts[$stateName] ?? 0) + 1;
+                $totalAssessors++;
+            }
+        }
+    }
+}
+arsort($stateCounts);
+$topStates = array_slice($stateCounts, 0, 5, true);
+$uniqueStatesCount = count($stateCounts);
+
 include 'includes/header.php';
 ?>
 
@@ -391,10 +417,221 @@ include 'includes/header.php';
 </section>
 <?php endif; ?>
 
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- ASSESSOR NETWORK MAP                                          -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="assessor-network" class="py-20 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white border-t border-b border-gray-100 dark:border-gray-700">
+  <div class="container mx-auto px-4">
+    
+    <div class="grid lg:grid-cols-12 gap-12 items-center">
+      
+      <!-- Left Column: Interactive Map -->
+      <div class="lg:col-span-6" data-aos="fade-right">
+        <div class="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-xl p-6 flex flex-col items-center justify-center overflow-hidden min-h-[500px]">
+          
+          <!-- Official India SVG Map wrapper -->
+          <div class="india-svg-container w-full h-full flex items-center justify-center relative z-10">
+            <?php 
+              $svgContent = file_get_contents('assets/images/india.svg');
+              // Clean xml header to prevent browser warnings
+              echo preg_replace('/<\?xml.*?\?>/i', '', $svgContent); 
+            ?>
+          </div>
+          
+          <!-- Floating Tooltip -->
+          <div id="map-tooltip" class="absolute bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-lg pointer-events-none opacity-0 shadow-lg transition-opacity duration-150 border border-slate-700 z-30"></div>
+          
+        </div>
+      </div>
+      
+      <!-- Style for India SVG map elements -->
+      <style>
+      .india-svg-container svg {
+        width: 100%;
+        height: auto;
+        max-height: 480px;
+      }
+      .india-svg-container path {
+        fill: #f8fafc;
+        stroke: #cbd5e1;
+        stroke-width: 0.8;
+        transition: fill 0.2s, stroke 0.2s;
+        cursor: pointer;
+      }
+      .india-svg-container path:hover {
+        fill: #93c5fd !important;
+        stroke: #3b82f6;
+        stroke-width: 1.5;
+      }
+      </style>
+      
+      <?php
+      // State-to-ID mapping dictionary for official map paths
+      $stateToIdMap = [
+          'ANDAMAN AND NICOBAR ISLANDS' => 'an',
+          'ANDHRA PRADESH'              => 'ap',
+          'ARUNACHAL PRADESH'           => 'ar',
+          'ASSAM'                       => 'as',
+          'BIHAR'                       => 'br',
+          'CHANDIGARH'                  => 'ch',
+          'CHHATTISGARH'                => 'ct',
+          'DADRA AND NAGAR HAVELI'      => 'dn',
+          'DAMAN AND DIU'               => 'dd',
+          'DELHI'                       => 'dl',
+          'GOA'                         => 'ga',
+          'GUJARAT'                     => 'gj',
+          'HARYANA'                     => 'hr',
+          'HIMACHAL PRADESH'            => 'hp',
+          'JAMMU AND KASHMIR'           => 'jk',
+          'JAMMU & KASHMIR'             => 'jk',
+          'JHARKHAND'                   => 'jh',
+          'KARNATAKA'                   => 'ka',
+          'KERALA'                      => 'kl',
+          'LADAKH'                      => 'la',
+          'LAKSHADWEEP'                 => 'ld',
+          'MADHYA PRADESH'              => 'mp',
+          'MAHARASHTRA'                 => 'mh',
+          'MANIPUR'                     => 'mn',
+          'MEGHALAYA'                   => 'ml',
+          'MIZORAM'                     => 'mz',
+          'NAGALAND'                    => 'nl',
+          'ODISHA'                      => 'or',
+          'ORISSA'                      => 'or',
+          'PUDUCHERRY'                  => 'py',
+          'PUNJAB'                      => 'pb',
+          'RAJASTHAN'                   => 'rj',
+          'SIKKIM'                      => 'sk',
+          'TAMIL NADU'                  => 'tn',
+          'TELANGANA'                   => 'tg',
+          'TRIPURA'                     => 'tr',
+          'UTTAR PRADESH'               => 'up',
+          'UTTARAKHAND'                 => 'ut',
+          'WEST BENGAL'                 => 'wb',
+      ];
 
-<!-- ══════════════════════════════════════════════════════════════ -->
-<!-- SERVICES                                                      -->
-<!-- ══════════════════════════════════════════════════════════════ -->
+      $idCounts = [];
+      foreach ($stateCounts as $state => $count) {
+          $cleanState = strtoupper(trim($state));
+          if (isset($stateToIdMap[$cleanState])) {
+              $idCounts[$stateToIdMap[$cleanState]] = [
+                  'count' => $count,
+                  'name'  => $state
+              ];
+          }
+      }
+      ?>
+      
+      <!-- Right Column: Stats Summary -->
+      <div class="lg:col-span-6" data-aos="fade-left">
+        <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-5"
+              style="background:rgba(59,130,246,.1);color:#1d4ed8;border:1px solid rgba(59,130,246,.2);">
+          <i class="fas fa-map-marked-alt"></i> Pan-India Presence
+        </span>
+        
+        <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-5 leading-tight">
+          Our Assessor Network
+        </h2>
+        
+        <p class="text-gray-500 dark:text-gray-400 leading-relaxed text-base mb-8">
+          Tirth Global Solutions LLP has empanelled a vast list of skilled assessors, certified across various sector skill councils and national boards. Hover over or click on any map hotspot to view regional assessor counts.
+        </p>
+        
+        <!-- Summary Stats grid -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+          <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <span class="text-gray-400 text-xs font-bold uppercase block tracking-wider mb-1">Empanelled Assessors</span>
+            <span class="text-3xl font-black text-blue-600 tracking-tight block"><?= number_format($totalAssessors) ?></span>
+          </div>
+          <div class="bg-white dark:bg-gray-900 rounded-xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <span class="text-gray-400 text-xs font-bold uppercase block tracking-wider mb-1">States Covered</span>
+            <span class="text-3xl font-black text-indigo-600 tracking-tight block"><?= $uniqueStatesCount ?></span>
+          </div>
+        </div>
+
+        <!-- Top States breakdown -->
+        <div class="space-y-4 mb-8">
+          <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm uppercase tracking-wider">Top Assessor Hubs</h4>
+          <?php 
+          foreach ($topStates as $state => $count): 
+              $percent = round(($count / max($totalAssessors, 1)) * 100);
+          ?>
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-gray-700 dark:text-gray-300"><?= htmlspecialchars($state) ?></span>
+                <span class="text-blue-600"><?= $count ?> Assessors (<?= $percent ?>%)</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-blue-600 h-full rounded-full transition-all duration-500" style="width: <?= $percent ?>%;"></div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+
+        <div class="flex gap-4">
+          <a href="page.php?slug=assessor-list" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-md">
+            <i class="fas fa-list"></i> Search Assessor Registry
+          </a>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</section>
+
+<!-- Map interactivity scripts -->
+<script>
+const stateData = <?= json_encode($idCounts) ?>;
+const tooltip = document.getElementById('map-tooltip');
+if (tooltip) {
+  tooltip.style.position = 'fixed';
+}
+
+document.querySelectorAll('.india-svg-container path').forEach(path => {
+  const id = path.getAttribute('id');
+  const count = stateData[id] ? stateData[id].count : 0;
+  const stateName = stateData[id] ? stateData[id].name : (path.getAttribute('name') || id.toUpperCase());
+  
+  // Set data attributes
+  path.setAttribute('data-count', count);
+  path.setAttribute('data-name', stateName);
+  
+  // Set colors dynamically based on count density
+  if (count > 0) {
+    let fill = '#dbeafe'; // light blue
+    if (count > 50) fill = '#1e3a8a'; // dark navy
+    else if (count > 20) fill = '#1d4ed8'; // royal blue
+    else fill = '#3b82f6'; // primary blue
+    
+    path.style.fill = fill;
+  } else {
+    // Empty state color
+    path.style.fill = '#f8fafc';
+  }
+  
+  // Hover events
+  path.addEventListener('mouseenter', (e) => {
+    tooltip.innerHTML = `<strong>${stateName}</strong><br><span class="text-blue-300">${count} Empanelled Assessors</span>`;
+    tooltip.style.opacity = '1';
+  });
+  
+  path.addEventListener('mousemove', (e) => {
+    tooltip.style.left = (e.clientX + 15) + 'px';
+    tooltip.style.top = (e.clientY - 40) + 'px';
+  });
+  
+  path.addEventListener('mouseleave', () => {
+    tooltip.style.opacity = '0';
+  });
+  
+  // Click event
+  path.addEventListener('click', () => {
+    if (count > 0) {
+      window.location.href = `page.php?slug=assessor-list#state=${encodeURIComponent(stateName)}`;
+    }
+  });
+});
+</script>
+
 <?php if (!empty($services)): ?>
 <section id="services" class="py-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
   <div class="container mx-auto px-4">

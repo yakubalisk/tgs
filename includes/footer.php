@@ -20,7 +20,7 @@
 
         <!-- <h3 class="text-2xl font-bold mb-4">TGS - Tirth Global Solutions</h3> -->
         <p class="text-blue-100 leading-relaxed mb-6 max-w-md">
-          292, Affinwala Building, 2nd Floor, Room No. 6, SBS Road Opp. EMCA House.
+          292, Affinwala Building, 2nd Floor, Room No. 6, Fort, SBS Road, Opp. EMCA House, Mumbai-400001.
         </p>
         <div class="space-y-3">
           <div class="flex items-center gap-3">
@@ -95,13 +95,13 @@
 
         <!-- Social Icons -->
         <div class="flex items-center gap-4">
-          <a href="#" class="text-white hover:text-blue-300 transition">
+          <a href="https://in.linkedin.com/company/tirth-global-solutions-llp" target="_blank" class="text-white hover:text-blue-300 transition">
             <i class="fab fa-linkedin-in"></i>
           </a>
-          <a href="#" class="text-white hover:text-blue-300 transition">
+          <a href="#" target="_blank" class="text-white hover:text-blue-300 transition">
             <i class="fab fa-twitter"></i>
           </a>
-          <a href="#" class="text-white hover:text-blue-300 transition">
+          <a href="#" target="_blank" class="text-white hover:text-blue-300 transition">
             <i class="fab fa-facebook-f"></i>
           </a>
         </div>

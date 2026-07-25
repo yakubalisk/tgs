@@ -153,6 +153,242 @@ include 'includes/header.php';
         </div>
       </section>
 
+    <!-- BLOCK TYPE: INTERACTIVE LIST / GRID -->
+    <?php elseif ($block['block_type'] === 'list'): 
+      $listData = json_decode($block['content'] ?? '[]', true) ?: [];
+      $headers = !empty($listData) ? array_keys($listData[0]) : [];
+      
+      // Extract unique states & genders for filter dropdowns if columns exist
+      $states = [];
+      $genders = [];
+      foreach ($listData as $row) {
+          foreach ($row as $k => $v) {
+              if (strtolower(trim($k)) === 'state' && !empty($v)) {
+                  $states[] = trim($v);
+              }
+              if (strtolower(trim($k)) === 'gender' && !empty($v)) {
+                  $genders[] = trim($v);
+              }
+          }
+      }
+      $states = array_unique($states); sort($states);
+      $genders = array_unique($genders); sort($genders);
+      
+      $blockIdAttr = 'list_' . $block['id'];
+    ?>
+      <section id="<?= $blockIdAttr ?>" class="py-20 bg-gray-50 border-b border-gray-100">
+        <div class="container mx-auto px-6 max-w-6xl">
+          
+          <div class="text-center mb-12" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4"><?= htmlspecialchars($block['heading']) ?></h2>
+            <?php if ($block['subtext']): ?>
+              <p class="text-lg text-gray-500 max-w-2xl mx-auto"><?= htmlspecialchars($block['subtext']) ?></p>
+            <?php endif; ?>
+          </div>
+
+          <!-- Controls: Search & Filters -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between" data-aos="fade-up">
+            <!-- Search -->
+            <div class="relative w-full md:max-w-xs">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <i class="fas fa-search text-sm"></i>
+              </span>
+              <input type="text" id="search_<?= $blockIdAttr ?>" onkeyup="filterList_<?= $blockIdAttr ?>()"
+                     placeholder="Search name, code, state..." 
+                     class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-3 w-full md:w-auto justify-end">
+              <?php if (!empty($states)): ?>
+                <select id="state_<?= $blockIdAttr ?>" onchange="filterList_<?= $blockIdAttr ?>()"
+                        class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+                  <option value="">All States</option>
+                  <?php foreach ($states as $s): ?>
+                    <option value="<?= htmlspecialchars($s) ?>"><?= htmlspecialchars($s) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              <?php endif; ?>
+
+              <?php if (!empty($genders)): ?>
+                <select id="gender_<?= $blockIdAttr ?>" onchange="filterList_<?= $blockIdAttr ?>()"
+                        class="px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white">
+                  <option value="">All Genders</option>
+                  <?php foreach ($genders as $g): ?>
+                    <option value="<?= htmlspecialchars($g) ?>"><?= htmlspecialchars($g) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              <?php endif; ?>
+
+              <?php if ($block['image_path']): ?>
+                <a href="<?= htmlspecialchars($block['image_path']) ?>" target="_blank"
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-xl text-sm transition">
+                  <i class="fas fa-file-csv"></i> Download CSV
+                </a>
+              <?php endif; ?>
+            </div>
+          </div>
+
+          <!-- TABLE VIEW -->
+          <?php if ($block['layout_option'] === 'table_view'): ?>
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden" data-aos="fade-up">
+              <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left" id="table_<?= $blockIdAttr ?>">
+                  <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-gray-700 font-bold text-xs uppercase tracking-wider">
+                      <?php foreach ($headers as $h): ?>
+                        <th class="px-6 py-4"><?= htmlspecialchars($h) ?></th>
+                      <?php endforeach; ?>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 text-gray-600 text-sm">
+                    <?php foreach ($listData as $rowIdx => $row): ?>
+                      <tr class="hover:bg-gray-50/50 transition row-item" 
+                          data-search="<?= htmlspecialchars(strtolower(implode(' ', array_values($row)))) ?>"
+                          <?php foreach ($row as $k => $v): ?>
+                            data-<?= strtolower(trim($k)) ?>="<?= htmlspecialchars(trim($v)) ?>"
+                          <?php endforeach; ?>>
+                        <?php foreach ($headers as $h): ?>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <?php if (strtolower(trim($h)) === 'name'): ?>
+                              <span class="font-semibold text-gray-900"><?= htmlspecialchars($row[$h] ?? '') ?></span>
+                            <?php elseif (strtolower(trim($h)) === 'assessor code'): ?>
+                              <code class="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono text-gray-700"><?= htmlspecialchars($row[$h] ?? '') ?></code>
+                            <?php else: ?>
+                              <?= htmlspecialchars($row[$h] ?? '') ?>
+                            <?php endif; ?>
+                          </td>
+                        <?php endforeach; ?>
+                      </tr>
+                    <?php endforeach; ?>
+                    <tr id="no_results_<?= $blockIdAttr ?>" style="display:none;">
+                      <td colspan="<?= count($headers) ?>" class="text-center py-12 text-gray-400">
+                        <i class="fas fa-filter text-3xl mb-3 block"></i> No matching assessors or records found.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          
+          <!-- CARDS VIEW -->
+          <?php else: ?>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="cards_<?= $blockIdAttr ?>" data-aos="fade-up">
+              <?php foreach ($listData as $rowIdx => $row): 
+                $sno = ''; $name = ''; $code = ''; $gender = ''; $state = ''; $qual = '';
+                foreach ($row as $k => $v) {
+                    $lk = strtolower(trim($k));
+                    if (strpos($lk, 'sno') !== false || strpos($lk, 's.no') !== false) $sno = $v;
+                    elseif ($lk === 'name') $name = $v;
+                    elseif (strpos($lk, 'code') !== false) $code = $v;
+                    elseif ($lk === 'gender') $gender = $v;
+                    elseif ($lk === 'state') $state = $v;
+                    elseif (strpos($lk, 'qual') !== false) $qual = $v;
+                }
+              ?>
+                <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 row-item"
+                     data-search="<?= htmlspecialchars(strtolower(implode(' ', array_values($row)))) ?>"
+                     <?php foreach ($row as $k => $v): ?>
+                       data-<?= strtolower(trim($k)) ?>="<?= htmlspecialchars(trim($v)) ?>"
+                     <?php endforeach; ?>>
+                  <div class="flex items-center justify-between mb-4 border-b border-gray-50 pb-3">
+                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Assessor #<?= htmlspecialchars($sno) ?></span>
+                    <span class="text-xs text-gray-400 font-mono"><?= htmlspecialchars($code) ?></span>
+                  </div>
+                  <h4 class="font-bold text-gray-900 text-lg mb-2"><?= htmlspecialchars($name) ?></h4>
+                  
+                  <div class="space-y-2 text-sm text-gray-600">
+                    <div class="flex justify-between">
+                      <span class="text-gray-400">Gender:</span>
+                      <span class="font-medium"><?= htmlspecialchars($gender) ?></span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-400">State:</span>
+                      <span class="font-medium text-gray-800"><?= htmlspecialchars($state) ?></span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-400">Qualification:</span>
+                      <span class="font-medium text-gray-700"><?= htmlspecialchars($qual) ?></span>
+                    </div>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            </div>
+            
+            <div id="no_results_card_<?= $blockIdAttr ?>" style="display:none;" class="text-center py-16 bg-white rounded-2xl border border-gray-100 text-gray-400" data-aos="fade-up">
+              <i class="fas fa-filter text-4xl mb-3 block"></i> No records matching filters found.
+            </div>
+          <?php endif; ?>
+
+        </div>
+      </section>
+
+      <!-- Client-side filtering script -->
+      <script>
+      function filterList_<?= $blockIdAttr ?>() {
+        const query = document.getElementById('search_<?= $blockIdAttr ?>').value.toLowerCase().trim();
+        
+        const stateEl = document.getElementById('state_<?= $blockIdAttr ?>');
+        const stateFilter = stateEl ? stateEl.value.toLowerCase().trim() : '';
+        
+        const genderEl = document.getElementById('gender_<?= $blockIdAttr ?>');
+        const genderFilter = genderEl ? genderEl.value.toLowerCase().trim() : '';
+
+        const containerId = '<?= $block['layout_option'] === 'table_view' ? 'table_' . $blockIdAttr : 'cards_' . $blockIdAttr ?>';
+        const container = document.getElementById(containerId);
+        const rows = container.getElementsByClassName('row-item');
+        
+        let visibleCount = 0;
+        
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const searchVal = row.dataset.search || '';
+          const rowState  = (row.dataset.state || '').toLowerCase().trim();
+          const rowGender = (row.dataset.gender || '').toLowerCase().trim();
+
+          const matchesQuery = query === '' || searchVal.includes(query);
+          const matchesState = stateFilter === '' || rowState === stateFilter;
+          const matchesGender = genderFilter === '' || rowGender === genderFilter;
+
+          if (matchesQuery && matchesState && matchesGender) {
+            row.style.display = '';
+            visibleCount++;
+          } else {
+            row.style.display = 'none';
+          }
+        }
+
+        const noResultsId = '<?= $block['layout_option'] === 'table_view' ? 'no_results_' . $blockIdAttr : 'no_results_card_' . $blockIdAttr ?>';
+        const noResults = document.getElementById(noResultsId);
+        if (noResults) {
+          noResults.style.display = visibleCount === 0 ? '' : 'none';
+        }
+      }
+      
+      // Handle pre-filtering from URL hash on load
+      window.addEventListener('DOMContentLoaded', () => {
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#state=')) {
+          const stateVal = decodeURIComponent(hash.split('=')[1]);
+          const stateEl = document.getElementById('state_<?= $blockIdAttr ?>');
+          if (stateEl) {
+            // Find option matches (case-insensitive)
+            for (let opt of stateEl.options) {
+              if (opt.value.toLowerCase() === stateVal.toLowerCase()) {
+                stateEl.value = opt.value;
+                break;
+              }
+            }
+            filterList_<?= $blockIdAttr ?>();
+            setTimeout(() => {
+              const el = document.getElementById('<?= $blockIdAttr ?>');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+          }
+        }
+      });
+      </script>
+
     <!-- BLOCK TYPE: CALL TO ACTION -->
     <?php elseif ($block['block_type'] === 'cta'): ?>
       <section class="py-16" 

@@ -5,6 +5,94 @@ include 'includes/header.php';
 
 $db  = new Database();
 $pdo = $db->con;
+
+function parseCSVToArray($filePath) {
+    $content = file_get_contents($filePath);
+    
+    // Remove UTF-8 BOM if present
+    if (strpos($content, "\xEF\xBB\xBF") === 0) {
+        $content = substr($content, 3);
+    }
+    
+    // Normalize line endings
+    $content = str_replace("\r\n", "\n", $content);
+    $content = str_replace("\r", "\n", $content);
+    
+    $rawLines = explode("\n", $content);
+    $lines = [];
+    foreach ($rawLines as $l) {
+        $trimmed = trim($l);
+        if ($trimmed !== '') {
+            $lines[] = $trimmed;
+        }
+    }
+    if (empty($lines)) return [];
+    
+    // Detect delimiter by checking the first line that has separators
+    $delimiter = ',';
+    foreach ($lines as $line) {
+        $delimiters = [',' => 0, ';' => 0, "\t" => 0];
+        foreach ($delimiters as $delim => &$count) {
+            $count = substr_count($line, $delim);
+        }
+        arsort($delimiters);
+        $bestDelim = key($delimiters);
+        if ($delimiters[$bestDelim] > 0) {
+            $delimiter = $bestDelim;
+            break;
+        }
+    }
+    
+    // Find the header row (first row with >= 3 non-empty fields)
+    $headerRowIdx = 0;
+    $headers = [];
+    foreach ($lines as $idx => $line) {
+        $cols = str_getcsv($line, $delimiter);
+        $nonEmptyCount = count(array_filter(array_map('trim', $cols)));
+        if ($nonEmptyCount >= 3) {
+            $headers = array_map(function($h) {
+                return trim(str_replace(['"', "'"], '', $h));
+            }, $cols);
+            $headerRowIdx = $idx;
+            break;
+        }
+    }
+    
+    // Fallback if no row has >= 3 fields
+    if (empty($headers)) {
+        $headers = str_getcsv($lines[0], $delimiter);
+        $headers = array_map(function($h) {
+            return trim(str_replace(['"', "'"], '', $h));
+        }, $headers);
+        $headerRowIdx = 0;
+    }
+    
+    $result = [];
+    // Process rows starting AFTER the header row
+    for ($i = $headerRowIdx + 1; $i < count($lines); $i++) {
+        $row = str_getcsv($lines[$i], $delimiter);
+        
+        // Skip empty rows
+        $nonEmptyCount = count(array_filter(array_map('trim', $row)));
+        if ($nonEmptyCount === 0) continue;
+        
+        if (count($row) < count($headers)) {
+            $row = array_pad($row, count($headers), '');
+        }
+        $item = [];
+        foreach ($headers as $idx => $headerName) {
+            if ($headerName === '') {
+                $headerName = 'Column_' . ($idx + 1);
+            }
+            $utf8Header = mb_convert_encoding($headerName, 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+            $utf8Val    = mb_convert_encoding(trim($row[$idx] ?? ''), 'UTF-8', 'UTF-8, ISO-8859-1, Windows-1252');
+            $item[$utf8Header] = $utf8Val;
+        }
+        $result[] = $item;
+    }
+    return $result;
+}
+
 $msg = '';
 $err = '';
 
@@ -76,34 +164,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sort    = (int)($_POST['sort_order'] ?? 0);
         $image   = '';
 
-        // Handle image upload if provided
-        if (isset($_FILES['block_image']) && $_FILES['block_image']['error'] === UPLOAD_ERR_OK) {
-            $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = finfo_file($finfo, $_FILES['block_image']['tmp_name']);
-            finfo_close($finfo);
-
-            if (in_array($mime, $allowed)) {
-                $ext = strtolower(pathinfo($_FILES['block_image']['name'], PATHINFO_EXTENSION));
-                $fname = 'block_' . uniqid() . '.' . $ext;
-                $dest = __DIR__ . '/../assets/uploads/' . $fname;
-                
-                // Ensure uploads directory exists
-                if (!is_dir(__DIR__ . '/../assets/uploads/')) {
-                    mkdir(__DIR__ . '/../assets/uploads/', 0777, true);
+        // Handle list block type specifically
+        if ($btype === 'list') {
+            if (isset($_FILES['csv_file']) && $_FILES['csv_file']['error'] === UPLOAD_ERR_OK) {
+                $ext = strtolower(pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION));
+                if ($ext === 'csv') {
+                    $fname = 'list_' . uniqid() . '.csv';
+                    $dest = __DIR__ . '/../assets/uploads/' . $fname;
+                    
+                    if (!is_dir(__DIR__ . '/../assets/uploads/')) {
+                        mkdir(__DIR__ . '/../assets/uploads/', 0777, true);
+                    }
+                    
+                    if (move_uploaded_file($_FILES['csv_file']['tmp_name'], $dest)) {
+                        $image = 'assets/uploads/' . $fname;
+                        $csvData = parseCSVToArray($dest);
+                        $content = json_encode($csvData);
+                    }
+                } else {
+                    $err = "Only CSV files are supported. Please save your file as CSV and upload.";
+                    $pageId = isset($_POST['page_id']) ? (int)$_POST['page_id'] : null;
+                    goto endpost;
                 }
-
-                if (move_uploaded_file($_FILES['block_image']['tmp_name'], $dest)) {
-                    $image = 'assets/uploads/' . $fname;
+            } elseif ($action === 'add_block') {
+                $err = "Please upload a CSV file containing the list data.";
+                $pageId = isset($_POST['page_id']) ? (int)$_POST['page_id'] : null;
+                goto endpost;
+            } elseif ($action === 'edit_block') {
+                // Keep existing CSV path and JSON content if no new file is uploaded
+                $oldBlockStmt = $pdo->prepare("SELECT content, image_path FROM page_blocks WHERE id = ?");
+                $oldBlockStmt->execute([$blockId]);
+                $oldB = $oldBlockStmt->fetch(PDO::FETCH_ASSOC);
+                if ($oldB) {
+                    $content = $oldB['content'];
+                    $image = $oldB['image_path'];
                 }
             }
-        }
+        } else {
+            // Handle image upload for other block types
+            if (isset($_FILES['block_image']) && $_FILES['block_image']['error'] === UPLOAD_ERR_OK) {
+                $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $_FILES['block_image']['tmp_name']);
+                finfo_close($finfo);
 
-        // If editing and no new image, retain old image
-        if ($action === 'edit_block' && $image === '') {
-            $oldImgStmt = $pdo->prepare("SELECT image_path FROM page_blocks WHERE id = ?");
-            $oldImgStmt->execute([$blockId]);
-            $image = $oldImgStmt->fetchColumn() ?: '';
+                if (in_array($mime, $allowed)) {
+                    $ext = strtolower(pathinfo($_FILES['block_image']['name'], PATHINFO_EXTENSION));
+                    $fname = 'block_' . uniqid() . '.' . $ext;
+                    $dest = __DIR__ . '/../assets/uploads/' . $fname;
+                    
+                    if (!is_dir(__DIR__ . '/../assets/uploads/')) {
+                        mkdir(__DIR__ . '/../assets/uploads/', 0777, true);
+                    }
+
+                    if (move_uploaded_file($_FILES['block_image']['tmp_name'], $dest)) {
+                        $image = 'assets/uploads/' . $fname;
+                    }
+                }
+            }
+
+            // If editing and no new image, retain old image
+            if ($action === 'edit_block' && $image === '') {
+                $oldImgStmt = $pdo->prepare("SELECT image_path FROM page_blocks WHERE id = ?");
+                $oldImgStmt->execute([$blockId]);
+                $image = $oldImgStmt->fetchColumn() ?: '';
+            }
         }
 
         if ($action === 'add_block') {
@@ -133,6 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$bid]);
         $msg = "Layout block deleted.";
     }
+    endpost:
 }
 
 // ── Fetch custom pages list ─────────────────────────────────────
@@ -404,6 +530,7 @@ if ($blockId) {
               <option value="image_text" <?= ($blockData['block_type']??'')==='image_text'?'selected':'' ?>>🖼️ Image & Text Layout</option>
               <option value="features" <?= ($blockData['block_type']??'')==='features'?'selected':'' ?>>🗂️ Cards / Features Grid</option>
               <option value="cta" <?= ($blockData['block_type']??'')==='cta'?'selected':'' ?>>⚡ Call to Action (CTA) Strip</option>
+              <option value="list" <?= ($blockData['block_type']??'')==='list'?'selected':'' ?>>📊 Interactive List / Grid Page</option>
             </select>
           </div>
 
@@ -426,9 +553,25 @@ if ($blockId) {
           <div class="form-group" id="imageGroup">
             <label class="form-label">Upload Section Image</label>
             <input type="file" name="block_image" class="form-control" accept="image/*">
-            <?php if ($blockData && $blockData['image_path']): ?>
+            <?php if ($blockData && $blockData['image_path'] && $blockData['block_type'] !== 'list'): ?>
               <div style="margin-top:8px;">
                 <img src="../<?= htmlspecialchars($blockData['image_path']) ?>" style="height:80px;border-radius:8px;border:1px solid #e2e8f0;">
+              </div>
+            <?php endif; ?>
+          </div>
+
+          <div class="form-group" id="csvGroup" style="display:none;">
+            <label class="form-label">Upload CSV File (Excel saved as CSV) *</label>
+            <input type="file" name="csv_file" class="form-control" accept=".csv" <?= $blockData ? '' : 'required' ?>>
+            <small style="color:#64748b;font-size:.75rem;margin-top:4px;display:block;">
+              CSV must have headers matching column values (e.g. <strong>SNo.</strong>, <strong>Name</strong>, <strong>Assessor Code</strong>, <strong>Gender</strong>, <strong>State</strong>, <strong>Qualification</strong>).
+            </small>
+            <?php if ($blockData && $blockData['block_type'] === 'list' && $blockData['image_path']): ?>
+              <div style="margin-top:8px;display:flex;align-items:center;gap:10px;">
+                <span class="badge badge-green">CSV Active</span>
+                <a href="../<?= htmlspecialchars($blockData['image_path']) ?>" target="_blank" class="btn btn-outline btn-sm">
+                  <i class="fas fa-download"></i> Download Current CSV
+                </a>
               </div>
             <?php endif; ?>
           </div>
@@ -492,6 +635,7 @@ function adjustBlockForm() {
   const contentLabel = document.getElementById('contentLabel');
   const contentHint  = document.getElementById('contentHint');
   const imageGroup   = document.getElementById('imageGroup');
+  const csvGroup     = document.getElementById('csvGroup');
   const buttonGroup  = document.getElementById('buttonGroup');
   const layoutSelect = document.getElementById('layoutSelect');
   
@@ -499,6 +643,7 @@ function adjustBlockForm() {
   subtextGroup.style.display = '';
   contentGroup.style.display = '';
   imageGroup.style.display   = 'none';
+  csvGroup.style.display     = 'none';
   buttonGroup.style.display  = '';
   contentHint.textContent    = '';
 
@@ -545,6 +690,15 @@ function adjustBlockForm() {
       {val: 'bg_blue', label: '🔵 Royal Blue solid'},
       {val: 'bg_gray', label: '⚪ Light Gray bar'},
       {val: 'bg_white', label: '⚪ White bar'}
+    ];
+  } else if (type === 'list') {
+    subtextLabel.textContent = 'Sub-heading / Abstract description';
+    contentGroup.style.display = 'none';
+    csvGroup.style.display = '';
+    buttonGroup.style.display = 'none';
+    layoutOpts = [
+      {val: 'table_view', label: '📊 Searchable Table Grid'},
+      {val: 'cards_view', label: '🗂️ Card Grid View'}
     ];
   }
 

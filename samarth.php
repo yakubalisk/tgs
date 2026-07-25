@@ -69,7 +69,7 @@ include 'includes/header.php';
       <div data-aos="fade-right">
         <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-6"
               style="background:rgba(99,179,237,.2);color:#93c5fd;border:1px solid rgba(99,179,237,.3);">
-          <i class="fas fa-landmark"></i> <?= sc('hero_badge',$settings,'Government of India Initiative') ?>
+          <i class="fas fa-landmark"></i> <?= sc('hero_badge',$settings,'Ministry of Textiles, Government of India Initiative') ?>
         </span>
         <h1 class="text-4xl lg:text-5xl font-bold text-white leading-tight mb-6"><?= sc('hero_heading',$settings,'Assessment Samarth Scheme') ?></h1>
         <p class="text-blue-100 text-lg leading-relaxed mb-8"><?= sc('hero_subtext',$settings) ?></p>
