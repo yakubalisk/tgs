@@ -227,7 +227,7 @@ foreach ($menuRows as $row) {
       <a href="index.php" class="flex items-center gap-3 flex-shrink-0">
         <img src="<?= hs('site_logo', $headerSettings, 'assets/images/tgs_logo.png') ?>" alt="TGS Logo" class="h-10 w-auto object-contain">
         <div class="hidden sm:block">
-          <span class="text-blue-900 font-bold text-base leading-tight block"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions LLP.') ?></span>
+          <span class="text-blue-900 font-bold text-2xl leading-tight block"><?= hs('site_name', $headerSettings, 'Tirth Global Solutions LLP.') ?></span>
           <!-- <span class="text-blue-500 font-medium text-xs tracking-wide"><?= hs('site_suffix', $headerSettings, 'LLP') ?></span> -->
         </div>
       </a>

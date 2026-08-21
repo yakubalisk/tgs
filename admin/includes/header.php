@@ -104,6 +104,8 @@ function navLink($href, $icon, $label, $current) {
     <?php navLink('samarth_manage.php',  'certificate',  'Samarth',       $currentPage); ?>
     <?php navLink('menu_manage.php',     'bars',         'Header Menu',   $currentPage); ?>
     <?php navLink('pages_manage.php',    'file-lines',   'Custom Pages',  $currentPage); ?>
+    <?php navLink('courses_manage.php',  'graduation-cap','Manage Courses',$currentPage); ?>
+    <?php navLink('qb_manage.php',       'circle-question','Question Bank',$currentPage); ?>
 
     <div class="sidebar-label">Inbox</div>
     <?php navLink('messages.php',  'envelope',  'Messages',  $currentPage); ?>
@@ -131,6 +133,8 @@ function navLink($href, $icon, $label, $current) {
         'samarth_manage.php'     => 'Assessment Samarth',
         'menu_manage.php'        => 'Header Menu Links',
         'pages_manage.php'       => 'Custom Pages Builder',
+        'courses_manage.php'     => 'Course Content Manager',
+        'qb_manage.php'          => 'Question Bank Manager',
         'messages.php'           => 'Messages',
       ];
       echo $titles[$currentPage] ?? 'Admin Panel';
